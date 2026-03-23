@@ -46,18 +46,20 @@
   <!-- SIDE NAV BAR -->
   <aside class="fixed left-0 top-12 bottom-0 z-40 flex flex-col items-center py-4 bg-[#191c22] dark:bg-[#191c22] border-r border-[#1d2026] w-20">
     <div class="flex flex-col gap-6 items-center w-full">
-      <div class="group flex flex-col items-center gap-1 w-full py-3 bg-[#1d2026] text-[#00e5ff] border-l-2 border-[#00e5ff] scale-95 active:scale-90 transition-transform cursor-pointer">
-        <span class="material-symbols-outlined filled-icon">dashboard</span>
+      <!-- Dash: toggles Data Sources panel -->
+      <button id="btn-toggle-data-sources" class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer border-l-2 border-transparent" title="Toggle Data Sources">
+        <span class="material-symbols-outlined filled-icon text-2xl">dashboard</span>
         <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Dash</span>
-      </div>
+      </button>
       <div class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer">
         <span class="material-symbols-outlined text-2xl">functions</span>
         <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Work</span>
       </div>
-      <div class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer">
+      <!-- Tool: toggles Analysis Toolkit panel -->
+      <button id="btn-toggle-analysis" class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer border-l-2 border-transparent" title="Toggle Analysis Toolkit">
         <span class="material-symbols-outlined text-2xl">settings_input_component</span>
         <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Tool</span>
-      </div>
+      </button>
       <div class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer">
         <span class="material-symbols-outlined text-2xl">router</span>
         <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Stat</span>
@@ -83,7 +85,7 @@
     </svg>
 
     <!-- LAYER MANAGER PANEL (Top Left of canvas) -->
-    <div class="absolute top-16 left-24 w-72 glass-panel z-20 rounded-lg overflow-hidden flex flex-col max-h-[calc(100%-6rem)]">
+    <div id="panel-data-sources" class="absolute top-16 left-24 w-72 glass-panel z-20 rounded-lg overflow-hidden flex flex-col max-h-[calc(100%-6rem)] hidden transition-all duration-300">
       <div class="bg-surface-container-high px-4 py-3 flex items-center justify-between border-b border-outline-variant/20">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-sm">layers</span>
@@ -111,81 +113,81 @@
     </div>
 
     <!-- FITS Analysis Toolkit Panel (Right) -->
-    <div class="absolute right-6 top-16 bottom-12 w-80 flex flex-col gap-4 z-20">
-      <div class="flex-1 glass-panel rounded-xl overflow-y-auto no-scrollbar p-5 flex flex-col gap-6 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
-          <h2 class="font-headline font-bold text-lg text-primary tracking-tight">ANALYSIS TOOLKIT</h2>
-          <span class="material-symbols-outlined text-primary/40">science</span>
+    <div id="panel-analysis-toolkit" class="absolute right-6 top-16 bottom-12 w-72 flex flex-col gap-3 z-20 hidden transition-all duration-300">
+      <div class="flex-1 glass-panel rounded-xl overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-4 shadow-2xl">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-2.5">
+          <h2 class="font-headline font-bold text-sm text-primary tracking-widest uppercase">Analysis Toolkit</h2>
+          <span class="material-symbols-outlined text-primary/30 text-base">science</span>
         </div>
-        
+
         <!-- Colormap Selector -->
-        <section class="space-y-3">
-          <label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Visual Rendering</label>
-          <div class="relative">
-            <select id="colormap-select" class="w-full bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant/20 flex items-center justify-between text-xs hover:border-primary/50 transition-colors text-white focus:ring-1 focus:ring-primary focus:outline-none appearance-none">
-              <option value="viridis">Viridis (Standard)</option>
-              <option value="plasma">Plasma</option>
-              <option value="magma">Magma</option>
-              <option value="inferno">Inferno</option>
-              <option value="cividis">Cividis</option>
-              <option value="greyscale">Greyscale</option>
-            </select>
-          </div>
+        <section class="space-y-1.5">
+          <label class="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/60">Colormap</label>
+          <select id="colormap-select" class="w-full bg-surface-container-lowest px-2.5 py-2 rounded-lg border border-outline-variant/20 text-[11px] hover:border-primary/50 transition-colors text-white focus:ring-1 focus:ring-primary focus:outline-none appearance-none font-mono cursor-pointer">
+            <option value="viridis">Viridis</option>
+            <option value="plasma">Plasma</option>
+            <option value="magma">Magma</option>
+            <option value="inferno">Inferno</option>
+            <option value="cividis">Cividis</option>
+            <option value="greyscale">Greyscale</option>
+          </select>
         </section>
 
         <!-- Scaling Controls -->
-        <section class="space-y-3">
-          <label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Scaling Function</label>
-          <div class="grid grid-cols-2 gap-2" id="scaling-toggles">
-            <button data-scale="linear" class="scale-btn flex items-center gap-2 p-2 bg-surface-container-low rounded border-l-2 border-primary text-[11px] font-mono text-primary">
+        <section class="space-y-1.5">
+          <label class="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/60">Scaling</label>
+          <div class="grid grid-cols-2 gap-1.5" id="scaling-toggles">
+            <button data-scale="linear" class="scale-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-low rounded border-l-2 border-primary text-[11px] font-mono text-primary">
               <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span> Linear
             </button>
-            <button data-scale="log" class="scale-btn flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
-              <span class="material-symbols-outlined text-sm">radio_button_unchecked</span> Logarithm
+            <button data-scale="log" class="scale-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined text-sm">radio_button_unchecked</span> Log
             </button>
-            <button data-scale="asinh" class="scale-btn flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+            <button data-scale="asinh" class="scale-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
               <span class="material-symbols-outlined text-sm">radio_button_unchecked</span> Asinh
             </button>
-            <button data-scale="squared" class="scale-btn flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+            <button data-scale="squared" class="scale-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
               <span class="material-symbols-outlined text-sm">radio_button_unchecked</span> Squared
             </button>
           </div>
         </section>
 
-        <!-- Contrast & Cutoffs -->
-        <section class="space-y-4">
-          <div class="flex items-center justify-between">
-            <label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Dynamic Range</label>
-            <span class="text-[10px] font-mono text-on-surface/40">CUTOFFS</span>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <span class="text-[9px] text-on-surface/50 font-mono">vmin</span>
-              <input id="input-vmin" class="w-full bg-surface-container-lowest border-none text-[11px] font-mono p-2 rounded focus:ring-1 focus:ring-primary text-primary" type="number" step="0.1" value="-0.5" />
+        <!-- Dynamic Range -->
+        <section class="space-y-1.5">
+          <label class="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/60">Dynamic Range</label>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="relative">
+              <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-on-surface/40 pointer-events-none">min</span>
+              <input id="input-vmin" class="w-full bg-surface-container-lowest border border-outline-variant/20 text-[11px] font-mono pl-7 pr-2 py-2 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none text-primary" type="number" step="0.1" value="-0.5" />
             </div>
-            <div class="space-y-1">
-              <span class="text-[9px] text-on-surface/50 font-mono">vmax</span>
-              <input id="input-vmax" class="w-full bg-surface-container-lowest border-none text-[11px] font-mono p-2 rounded focus:ring-1 focus:ring-primary text-tertiary" type="number" step="0.1" value="15.0" />
+            <div class="relative">
+              <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-on-surface/40 pointer-events-none">max</span>
+              <input id="input-vmax" class="w-full bg-surface-container-lowest border border-outline-variant/20 text-[11px] font-mono pl-7 pr-2 py-2 rounded-lg focus:ring-1 focus:ring-primary focus:outline-none text-secondary" type="number" step="0.1" value="15.0" />
             </div>
           </div>
         </section>
 
         <!-- Action Buttons -->
-        <div class="grid grid-cols-2 gap-2 pt-4 border-t border-outline-variant/10 mt-auto">
-          <button id="btn-invert" class="col-span-1 flex items-center justify-center gap-2 p-2 bg-surface-container-high hover:bg-surface-bright rounded text-[11px] font-mono transition-all">
-            <span class="material-symbols-outlined text-sm">invert_colors</span> Invert
+        <div class="grid grid-cols-3 gap-1.5 pt-3 border-t border-outline-variant/10 mt-auto">
+          <button id="btn-invert" class="flex flex-col items-center justify-center gap-1 py-2 bg-surface-container-high hover:bg-surface-bright rounded text-[10px] font-mono transition-all">
+            <span class="material-symbols-outlined text-sm">invert_colors</span>
+            Invert
           </button>
-          <button id="btn-reset" class="col-span-1 flex items-center justify-center gap-2 p-2 bg-surface-container-high hover:bg-surface-bright rounded text-[11px] font-mono transition-all">
-            <span class="material-symbols-outlined text-sm">refresh</span> Reset
+          <button id="btn-reset" class="flex flex-col items-center justify-center gap-1 py-2 bg-surface-container-high hover:bg-surface-bright rounded text-[10px] font-mono transition-all">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            Reset
           </button>
-          <button id="btn-apply-cuts" class="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all">
-            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span> Apply Cutoffs
+          <button id="btn-apply-cuts" class="flex flex-col items-center justify-center gap-1 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded text-[10px] font-mono text-primary transition-all">
+            <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">tune</span>
+            Apply
           </button>
         </div>
       </div>
 
       <!-- Coordinate Panel (Lower Right) -->
-      <div class="glass-panel rounded-xl p-3 shadow-xl">
+      <div class="glass-panel rounded-xl px-3 py-2.5 shadow-xl">
         <div class="flex items-center justify-between gap-4">
           <div class="flex flex-col">
             <span class="text-[9px] uppercase tracking-widest text-primary/60 font-mono">Center RA/Dec</span>
@@ -198,6 +200,7 @@
         </div>
       </div>
     </div>
+
   </main>
 
   <!-- FOOTER STATUS BAR -->

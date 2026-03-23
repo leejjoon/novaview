@@ -35,4 +35,17 @@
   .dual-range-track {
     background: linear-gradient(to right, #32353c 0%, #c3f5ff 30%, #ffe9cd 70%, #32353c 100%);
   }
+
+  /* Hide all Aladin Lite native UI controls */
+  .aladin-logo,
+  .aladin-zoom-control,
+  .aladin-coo-location,
+  .aladin-location,
+  .aladin-reticle,
+  .aladin-projection-control,
+  .aladin-status-bar,
+  #aladin-lite-container .aladin-coo,
+  #aladin-lite-container canvas + div > a {
+    display: none !important;
+  }
 }
