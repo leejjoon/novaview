@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tauri::http::{Request, Response};
 
 #[derive(Parser, Default, Debug, Clone)]
-#[clap(author, version, about, long_about = None)]
+#[clap(author, version, about, long_about = None, ignore_errors = true)]
 pub struct CliArgs {
     #[clap(long, help = "Survey URI to load on startup")]
     pub survey: Option<String>,
