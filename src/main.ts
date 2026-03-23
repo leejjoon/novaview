@@ -74,26 +74,101 @@ const checkA = setInterval(() => {
 
             // --- Default init: apply colormap + cuts to match the UI defaults ---
             const DEFAULT_COLORMAP = 'viridis';
+            const DEFAULT_STRETCH  = 'linear';
             const DEFAULT_VMIN = -0.5;
             const DEFAULT_VMAX = 15.0;
-            const applyImgOptions = (opts: Record<string, unknown>) => {
-                const baseLayer = aladin.getBaseImageLayer();
-                if (baseLayer && baseLayer.setOptions) baseLayer.setOptions(opts);
+            const SURVEY_BASE_URL = 'hips-compute://local_survey';
+
+            // Helper: read current UI values
+            const getCurrentSettings = () => ({
+                colormap: (document.getElementById('colormap-select') as HTMLSelectElement)?.value ?? DEFAULT_COLORMAP,
+                stretch:  (() => {
+                    const active = document.querySelector('.scale-btn[data-scale].border-primary') as HTMLElement | null;
+                    return active?.getAttribute('data-scale') ?? DEFAULT_STRETCH;
+                })(),
+                vmin: parseFloat((document.getElementById('input-vmin') as HTMLInputElement)?.value ?? String(DEFAULT_VMIN)),
+                vmax: parseFloat((document.getElementById('input-vmax') as HTMLInputElement)?.value ?? String(DEFAULT_VMAX)),
+            });
+
+            // Apply settings to an HpxImageSurvey object using the proper v3 API
+            const applyToSurvey = (survey: any, colormap: string, stretch: string, vmin: number, vmax: number) => {
+                if (!survey) return;
+                try { survey.setColormap(colormap, { stretch }); } catch (_) {}
+                try { survey.setCuts(vmin, vmax); } catch (_) {}
             };
-            // Apply on next tick so the survey has time to load
+
+            // Convenience: apply to the current base layer
+            const applyImgOptions = (opts: { colormap?: string; stretch?: string; minCut?: number; maxCut?: number; reversed?: boolean }) => {
+                const layer = aladin.getBaseImageLayer();
+                if (!layer) return;
+                if (opts.colormap !== undefined || opts.stretch !== undefined) {
+                    try {
+                        const cmap = opts.colormap ?? DEFAULT_COLORMAP;
+                        const st   = opts.stretch  ?? DEFAULT_STRETCH;
+                        layer.setColormap(cmap, { stretch: st, reversed: opts.reversed ?? false });
+                    } catch (_) {
+                        // Fallback to legacy API if available
+                        try { layer.setOptions({ colormap: opts.colormap, stretch: opts.stretch }); } catch (_) {}
+                    }
+                }
+                if (opts.minCut !== undefined && opts.maxCut !== undefined) {
+                    try { layer.setCuts(opts.minCut, opts.maxCut); } catch (_) {}
+                }
+                if (opts.reversed !== undefined && opts.colormap === undefined) {
+                    try { layer.setColormap(DEFAULT_COLORMAP, { reversed: opts.reversed }); } catch (_) {}
+                }
+            };
+
+            // Apply defaults on init (next tick so survey has time to load)
             setTimeout(() => {
-                applyImgOptions({ colormap: DEFAULT_COLORMAP, stretch: 'linear', minCut: DEFAULT_VMIN, maxCut: DEFAULT_VMAX });
+                applyImgOptions({ colormap: DEFAULT_COLORMAP, stretch: DEFAULT_STRETCH, minCut: DEFAULT_VMIN, maxCut: DEFAULT_VMAX });
             }, 500);
+
+            // --- Reload button: re-create survey object with current settings applied ---
+            const reloadBtn = document.getElementById('btn-reload-survey');
+            if (reloadBtn) {
+                reloadBtn.addEventListener('click', () => {
+                    const { colormap, stretch, vmin, vmax } = getCurrentSettings();
+
+                    reloadBtn.classList.add('spinning');
+                    reloadBtn.setAttribute('disabled', 'true');
+
+                    try {
+                        // newImageSurvey() returns an HpxImageSurvey object.
+                        // We apply colormap/cuts on it BEFORE handing it to Aladin.
+                        const survey = aladin.newImageSurvey(SURVEY_BASE_URL);
+                        applyToSurvey(survey, colormap, stretch, vmin, vmax);
+                        aladin.setBaseImageLayer(survey);
+
+                        // Aladin Lite v3 may perform an automatic "auto-cut" after the layer
+                        // is attached to the view. To be sure we keep our values, we
+                        // provide a secondary application after a short delay.
+                        setTimeout(() => {
+                            applyImgOptions({ colormap, stretch, minCut: vmin, maxCut: vmax });
+                        }, 500);
+
+                    } catch (_) {
+                        // Fallback if newImageSurvey is unavailable
+                        try { aladin.setBaseImageLayer(SURVEY_BASE_URL); } catch (_) {}
+                    }
+
+                    reloadBtn.classList.remove('spinning');
+                    reloadBtn.removeAttribute('disabled');
+                });
+            }
 
             // FITS Controls Wiring
             document.getElementById('colormap-select')?.addEventListener('change', (e) => {
-                applyImgOptions({ colormap: (e.target as HTMLSelectElement).value });
+                const val = (e.target as HTMLSelectElement).value;
+                const { stretch } = getCurrentSettings();
+                applyImgOptions({ colormap: val, stretch });
             });
 
             document.querySelectorAll('.scale-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const scale = (e.currentTarget as HTMLElement).getAttribute('data-scale') || 'linear';
-                    applyImgOptions({ stretch: scale });
+                    const { colormap } = getCurrentSettings();
+                    applyImgOptions({ colormap, stretch: scale });
 
                     document.querySelectorAll('.scale-btn').forEach(b => {
                         b.classList.remove('border-primary', 'text-primary', 'bg-surface-container-low');
@@ -129,7 +204,8 @@ const checkA = setInterval(() => {
             document.getElementById('btn-invert')?.addEventListener('click', () => {
                 let isReversed = false;
                 try { isReversed = aladin.getBaseImageLayer()?.getColorCfg?.()?.getReversed() ?? false; } catch(_) {}
-                applyImgOptions({ reversed: !isReversed });
+                const { colormap, stretch } = getCurrentSettings();
+                applyImgOptions({ colormap, stretch, reversed: !isReversed });
             });
 
             document.getElementById('btn-reset')?.addEventListener('click', () => {
@@ -154,14 +230,7 @@ const checkA = setInterval(() => {
                 applyImgOptions({ stretch: 'linear', colormap: DEFAULT_COLORMAP, reversed: false, minCut: DEFAULT_VMIN, maxCut: DEFAULT_VMAX });
             });
 
-            document.getElementById('btn-apply-cuts')?.addEventListener('click', () => {
-                const vmin = parseFloat((document.getElementById('input-vmin') as HTMLInputElement).value);
-                const vmax = parseFloat((document.getElementById('input-vmax') as HTMLInputElement).value);
-                const baseLayer = aladin.getBaseImageLayer();
-                if (baseLayer && baseLayer.setOptions) {
-                    baseLayer.setOptions({ minCut: vmin, maxCut: vmax });
-                }
-            });
+
 
             fetch('hips-compute://local_survey/properties')
                 .then(res => res.text())

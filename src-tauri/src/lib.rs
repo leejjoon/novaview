@@ -56,7 +56,15 @@ pub fn run() {
                 root_dir.join(path.trim_start_matches('/'))
             };
 
-            let response = match std::fs::read(&file_path) {
+            let response = if !file_path.exists() || file_path.is_dir() {
+                // Silently return 404 for directory paths or unknown resources
+                Response::builder()
+                    .status(404)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .body(Vec::new())
+                    .unwrap()
+            } else {
+                match std::fs::read(&file_path) {
                 Ok(bytes) => {
                     let mut builder = Response::builder()
                         .status(200)
@@ -80,6 +88,7 @@ pub fn run() {
                         .body(Vec::new())
                         .unwrap()
                 }
+            }
             };
             response
         })
