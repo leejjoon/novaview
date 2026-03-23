@@ -1,0 +1,131 @@
+# **Product Requirements Document: NovaView (Simplified Edition)**
+
+**Tauri-based Native Compute HiPS Viewer with Python Remote Control**
+
+## **1\. Product Overview**
+
+NovaView is a high-performance desktop astronomical viewer bridging WebGL (Aladin Lite v3) and native Rust performance. It is designed to be a lightweight, single-executable application that can instantly compute and display simple image arithmetics between multiple sky surveys on the fly.
+
+Beyond being a standard GUI application, NovaView acts as a highly scriptable visualization node. It features a robust Command Line Interface (CLI) and an embedded WebSocket server, allowing data scientists to drive the UI, load FITS files, and adjust rendering parameters entirely from a remote Python client.
+
+## **2\. Architecture & Technology Stack**
+
+* **Frontend:** HTML/JS \+ Aladin Lite v3 (running inside a Tauri Webview).  
+* **Backend Compute & Routing:** Rust \+ Tauri.  
+  * image / rayon: For fast, multi-threaded pixel manipulation of HiPS tiles.  
+  * axum or tokio-tungstenite: Embedded WebSocket server for Python IPC.  
+* **Data Sources:** \* Local Disk (served via custom protocol).  
+  * Remote HTTP (standard HiPS servers).  
+  * Simple Redis Key-Value Store.
+
+## **3\. The Synchronous Compute Engine**
+
+The architecture relies on a single, highly optimized execution path for HiPS arithmetic.
+
+1. **Trigger:** The user (or Python client) pans or zooms the map. Aladin Lite requests a tile via a custom URI (e.g., hips-compute://dust\_ratio/Norder3/Dir0/Npix42.jpg).  
+2. **Intercept:** Tauri's custom protocol handler intercepts the request.  
+3. **Fetch & Compute:** Rust fetches the base tiles from their respective sources (Local, HTTP, Redis). It normalizes pixel values to f32, performs math in parallel using rayon, normalizes back to 8-bit, and encodes the output.  
+4. **Return:** Rust immediately returns the computed bytes to the browser for instantaneous WebGL rendering.
+
+## **4\. Core Features**
+
+### **4.1. Command Line Interface (CLI)**
+
+NovaView can be launched directly from the terminal, accepting launch arguments to instantly load a specific survey or FITS file on startup.
+
+* **Syntax:** novaview \--survey \<URI\>  
+* **Examples:**  
+  * novaview \--survey local:///data/my\_hips\_survey  
+  * novaview \--survey redis://127.0.0.1/iras\_100um  
+  * novaview \--survey https://alasky.cds.unistra.fr/DSS/DSS2
+
+### **4.2. User Interface (UI) & Survey Management**
+
+The frontend layout consists of the main WebGL canvas and a collapsible side-panel for data management.
+
+* **Survey Loader:** UI inputs to load multiple surveys simultaneously into the app's memory.  
+* **Visibility Control:** A layer manager utilizing **radio buttons** to strictly control which primary survey (or computed arithmetic layer) is currently visible on the canvas.  
+* **Dynamic Math UI:** Dropdowns to select two loaded surveys and an operator (+, \-, \*, /) to instantly generate a new selectable virtual layer.
+
+### **4.3. Native FITS Support & Rendering Controls**
+
+While Rust handles the HiPS tile arithmetic, the app leverages **Aladin Lite v3's native FITS parser** to handle standalone .fits images.
+
+* **The Flow:** Rust passes the raw FITS file bytes directly to the JS frontend, where Aladin's WebGL engine takes over.  
+* **UI Controls:** When a FITS file is active, the UI exposes standard astronomical image controls:  
+  * **Color Maps:** Dropdown to select colormaps (e.g., viridis, plasma, greyscale).  
+  * **Scale / Transfer Function:** Options for Linear, Log, Asinh, or Squared scaling.  
+  * **Contrast / Cutoffs:** Dual-slider (min/max) to adjust the pixel value range (vmin/vmax) applied to the colormap.
+
+### **4.4. Remote Control (Python Client API)**
+
+The Rust backend runs a lightweight, local **WebSocket server** (e.g., on ws://127.0.0.1:8765). This allows an external Python script to remote-control the application in real-time.
+
+* **Capabilities:** Almost every action available in the GUI can be triggered via a JSON payload over the WebSocket.  
+* **Example Python Client Usage:**  
+  import websockets  
+  import json  
+  import asyncio
+
+  async def control\_viewer():  
+      async with websockets.connect("ws://127.0.0.1:8765") as ws:  
+          \# 1\. Load a local FITS file  
+          await ws.send(json.dumps({  
+              "action": "load\_fits",  
+              "id": "my\_observation",  
+              "path": "/data/obs\_001.fits"  
+          }))
+
+          \# 2\. Make it the visible layer (select the radio button)  
+          await ws.send(json.dumps({  
+              "action": "set\_visible",  
+              "layer\_id": "my\_observation"  
+          }))
+
+          \# 3\. Adjust FITS rendering parameters  
+          await ws.send(json.dumps({  
+              "action": "update\_fits\_display",  
+              "layer\_id": "my\_observation",  
+              "colormap": "viridis",  
+              "scale": "asinh",  
+              "vmin": \-0.5,  
+              "vmax": 15.0  
+          }))
+
+          \# 4\. Pan the camera  
+          await ws.send(json.dumps({  
+              "action": "set\_view",  
+              "ra": 83.63,  
+              "dec": 22.01,  
+              "fov": 0.5  
+          }))
+
+  asyncio.run(control\_viewer())
+
+### **4.5. Multi-Source Ingestion & Caching**
+
+* **Protocol Abstraction:** Rust abstract fetches via std::fs (local), reqwest (HTTP), or redis (Redis store).  
+* **LRU Cache:** The moka crate caches recently computed math tiles in RAM to prevent redundant CPU cycles during camera panning.
+
+## **5\. System Components & Responsibilities**
+
+| Component | Responsibility | Technologies |
+| :---- | :---- | :---- |
+| **Tauri Core** | Window mgmt, CLI parsing, hips-compute:// routing. | Rust, tauri, clap (CLI) |
+| **WebSocket API** | Listen for external Python commands, emit to JS. | Rust, tokio-tungstenite |
+| **Rust Compute** | Fast math (+, \-, \*, /), encoding/decoding, tile fetching. | Rust, image, rayon |
+| **Aladin JS** | WebGL projection, FITS parsing, applying colormaps. | JS, WebGL2, Aladin Lite v3 |
+
+## **6\. Implementation Milestones**
+
+* **Phase 1: Foundation & CLI**  
+  * Set up Tauri application with clap for command-line argument parsing.  
+  * Implement the custom protocol to serve static HiPS tiles.  
+* **Phase 2: UI & Native FITS Controls**  
+  * Build the sidebar UI with radio buttons for layer selection.  
+  * Expose Aladin Lite's native FITS methods (setColormap, setCut) to the UI sliders.  
+* **Phase 3: The Math Engine**  
+  * Implement the Rust image and rayon pipeline for synchronous tile arithmetic.  
+* **Phase 4: Python Remote Control**  
+  * Embed the WebSocket server in the Tauri Rust backend.  
+  * Map incoming WebSocket JSON commands to Tauri UI events (using app.emit\_all()) to update the Aladin canvas automatically.

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NovaView</title>
+    <!-- Aladin Lite v3 -->
+    <link rel="stylesheet" href="/aladin.css" />
+    <script type="text/javascript" src="/jquery.min.js" charset="utf-8"></script>
+    <style>
+      body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+      #aladin-lite-container { width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <!-- Capture all early errors -->
+    <script type="module">
+      import { invoke } from "/node_modules/@tauri-apps/api/core.js";
+      window.addEventListener("error", (e) => {
+        invoke('log_message', { msg: `GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}` }).catch(console.error);
+      });
+      console.log("Global error handler installed via module");
+    </script>
+    <div id="aladin-lite-container"></div>
+    <!-- Aladin Lite library must be loaded after jquery -->
+    <script type="text/javascript" src="/aladin.js" charset="utf-8"></script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

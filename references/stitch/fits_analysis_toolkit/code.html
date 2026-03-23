@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NovaView | FITS Analysis Toolkit</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#363940",
+                        "secondary": "#e0b6ff",
+                        "surface-container-lowest": "#0b0e14",
+                        "primary-fixed": "#9cf0ff",
+                        "on-primary-fixed-variant": "#004f58",
+                        "on-primary": "#00363d",
+                        "inverse-on-surface": "#2e3037",
+                        "on-surface": "#e1e2eb",
+                        "surface-tint": "#00daf3",
+                        "on-tertiary-container": "#775200",
+                        "on-primary-fixed": "#001f24",
+                        "primary": "#c3f5ff",
+                        "background": "#10131a",
+                        "on-secondary-fixed": "#2e004e",
+                        "on-background": "#e1e2eb",
+                        "surface-container-high": "#272a31",
+                        "tertiary-fixed-dim": "#ffba38",
+                        "surface-container": "#1d2026",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#00e5ff",
+                        "on-tertiary-fixed": "#281900",
+                        "on-secondary-container": "#d7a4ff",
+                        "tertiary": "#ffe9cd",
+                        "surface-dim": "#10131a",
+                        "on-tertiary-fixed-variant": "#604100",
+                        "error": "#ffb4ab",
+                        "primary-fixed-dim": "#00daf3",
+                        "tertiary-container": "#ffc769",
+                        "outline": "#849396",
+                        "tertiary-fixed": "#ffdeac",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#432c00",
+                        "secondary-container": "#6d11ad",
+                        "surface-container-highest": "#32353c",
+                        "on-secondary-fixed-variant": "#6a0baa",
+                        "on-secondary": "#4c007d",
+                        "surface": "#10131a",
+                        "secondary-fixed-dim": "#e0b6ff",
+                        "surface-container-low": "#191c22",
+                        "on-surface-variant": "#bac9cc",
+                        "on-primary-container": "#00626e",
+                        "secondary-fixed": "#f2daff",
+                        "outline-variant": "#3b494c",
+                        "surface-variant": "#32353c",
+                        "inverse-surface": "#e1e2eb",
+                        "inverse-primary": "#006875"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .dual-range-track {
+            background: linear-gradient(to right, #32353c 0%, #c3f5ff 30%, #ffe9cd 70%, #32353c 100%);
+        }
+        .glass-panel {
+            background: rgba(39, 42, 49, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 73, 76, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 bg-[#10131a] dark:bg-[#10131a] border-b border-[#1d2026] h-12">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#c3f5ff] font-headline uppercase">NovaView</span>
+<nav class="hidden md:flex items-center gap-4">
+<a class="font-['Space_Grotesk'] tracking-tight text-sm uppercase transition-colors duration-150 ease-in-out px-2 py-1 text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff]" href="#">File</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm uppercase transition-colors duration-150 ease-in-out px-2 py-1 text-[#00e5ff] font-bold hover:bg-[#191c22] hover:text-[#00e5ff]" href="#">View</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm uppercase transition-colors duration-150 ease-in-out px-2 py-1 text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff]" href="#">Windows</a>
+<a class="font-['Space_Grotesk'] tracking-tight text-sm uppercase transition-colors duration-150 ease-in-out px-2 py-1 text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff]" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-[#c3f5ff]">
+<span class="material-symbols-outlined cursor-pointer hover:text-[#00e5ff]">sensors</span>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-12 bottom-0 z-40 flex flex-col items-center py-4 bg-[#191c22] dark:bg-[#191c22] border-r border-[#1d2026] w-20">
+<div class="flex flex-col gap-6 items-center w-full">
+<div class="flex flex-col items-center gap-1 group cursor-pointer w-full py-2 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<span class="font-['Inter'] text-[11px] font-medium uppercase">Dash</span>
+</div>
+<div class="flex flex-col items-center gap-1 group cursor-pointer w-full py-2 bg-[#1d2026] text-[#00e5ff] border-l-2 border-[#00e5ff] transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined text-2xl">functions</span>
+<span class="font-['Inter'] text-[11px] font-medium uppercase">Work</span>
+</div>
+<div class="flex flex-col items-center gap-1 group cursor-pointer w-full py-2 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined text-2xl">settings_input_component</span>
+<span class="font-['Inter'] text-[11px] font-medium uppercase">Tool</span>
+</div>
+<div class="flex flex-col items-center gap-1 group cursor-pointer w-full py-2 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined text-2xl">router</span>
+<span class="font-['Inter'] text-[11px] font-medium uppercase">Stat</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas / Viewport -->
+<main class="fixed inset-0 ml-20 mt-12 mb-8 bg-surface overflow-hidden">
+<!-- Background Visualization Simulation -->
+<div class="absolute inset-0 bg-gradient-to-br from-surface to-surface-container-lowest flex items-center justify-center">
+<div class="w-full h-full opacity-60 mix-blend-screen overflow-hidden">
+<img alt="FITS Viewport Background" class="w-full h-full object-cover filter contrast-125 brightness-75 hue-rotate-15 grayscale-[0.2]" data-alt="Deep space nebula with vibrant stellar dust and stars" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLemkcPCuLei8DtFAQC7exEEj3PuiizVtSVBojPPeqy86BxNyHC8lkbY1mjzMd7o3BHIsWmv1ClP7jgQbbl9-wFIhIJ2dC9fED0R1JRoU4VSHAZ8uFpC7ZYjpx2eErWSqwqeuRifcEo4Jp3oYn_mrs6LUQQj0giv5eDx9Y7aCUhDKdmGmlDO2LoKFaxIyCm23xFm8H78uZdi98V9fz9ifOp-WimoL4kT4VBW8p6SEpcexbg2z3IXjJevWimxcqUloXzrf01MN_KSaZ"/>
+</div>
+<!-- Viewport Crosshair -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-8 h-8 border border-primary/20 rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- FITS Header Info Overlay (Top) -->
+<div class="absolute top-6 left-1/2 -translate-x-1/2 w-[600px] glass-panel rounded-lg px-4 py-2 flex items-center justify-between z-30">
+<div class="flex items-center gap-6">
+<div class="flex flex-col">
+<span class="text-[9px] uppercase tracking-widest text-primary/60 font-mono">Object Name</span>
+<span class="text-xs font-mono text-on-surface">NGC 7000 (North America)</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<div class="flex flex-col">
+<span class="text-[9px] uppercase tracking-widest text-primary/60 font-mono">Instrument</span>
+<span class="text-xs font-mono text-on-surface">ZWO ASI6200MM-P</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<div class="flex flex-col">
+<span class="text-[9px] uppercase tracking-widest text-primary/60 font-mono">ExpTime</span>
+<span class="text-xs font-mono text-on-surface">300.0s @ -10°C</span>
+</div>
+</div>
+<button class="p-1 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined text-sm">expand_less</span>
+</button>
+</div>
+<!-- FITS Analysis Toolkit Panel (Right) -->
+<div class="absolute right-6 top-6 bottom-6 w-80 flex flex-col gap-4 z-30">
+<!-- Main Toolkit Container -->
+<div class="flex-1 glass-panel rounded-xl overflow-y-auto no-scrollbar p-5 flex flex-col gap-6 shadow-2xl">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+<h2 class="font-headline font-bold text-lg text-primary tracking-tight">ANALYSIS TOOLKIT</h2>
+<span class="material-symbols-outlined text-primary/40">science</span>
+</div>
+<!-- Colormap Selector -->
+<section class="space-y-3">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Visual Rendering</label>
+<div class="relative">
+<button class="w-full bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant/20 flex items-center justify-between text-xs hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-12 h-3 rounded-sm bg-gradient-to-right from-[#440154] via-[#21918c] to-[#fde725]"></div>
+<span class="font-mono">Viridis (Standard)</span>
+</div>
+<span class="material-symbols-outlined text-sm">unfold_more</span>
+</button>
+</div>
+</section>
+<!-- Scaling Controls -->
+<section class="space-y-3">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Scaling Function</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="flex items-center gap-2 p-2 bg-surface-container-low rounded border-l-2 border-primary text-[11px] font-mono text-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+                            Linear
+                        </button>
+<button class="flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            Logarithm
+                        </button>
+<button class="flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            Asinh
+                        </button>
+<button class="flex items-center gap-2 p-2 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+                            Squared
+                        </button>
+</div>
+</section>
+<!-- Contrast & Cutoffs -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Dynamic Range</label>
+<span class="text-[10px] font-mono text-on-surface/40">BIT-DEPTH: 16-bit</span>
+</div>
+<div class="relative h-6 flex items-center">
+<div class="absolute inset-0 h-1.5 bg-surface-container-highest rounded-full my-auto"></div>
+<div class="absolute h-1.5 dual-range-track rounded-full my-auto left-1/4 right-1/4"></div>
+<div class="absolute left-1/4 -translate-x-1/2 w-3 h-3 bg-on-surface rounded-sm shadow-md border border-primary cursor-pointer"></div>
+<div class="absolute right-1/4 translate-x-1/2 w-3 h-3 bg-on-surface rounded-sm shadow-md border border-tertiary cursor-pointer"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<span class="text-[9px] text-on-surface/50 font-mono">vmin</span>
+<input class="w-full bg-surface-container-lowest border-none text-[11px] font-mono p-2 rounded focus:ring-1 focus:ring-primary text-primary" type="text" value="1,024"/>
+</div>
+<div class="space-y-1">
+<span class="text-[9px] text-on-surface/50 font-mono">vmax</span>
+<input class="w-full bg-surface-container-lowest border-none text-[11px] font-mono p-2 rounded focus:ring-1 focus:ring-primary text-tertiary" type="text" value="64,512"/>
+</div>
+</div>
+</section>
+<!-- Histogram Preview -->
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<label class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/70">Luminance Profile</label>
+<span class="text-[10px] font-mono text-tertiary">PEAK: 4.2k</span>
+</div>
+<div class="h-24 w-full bg-surface-container-lowest rounded-lg border border-outline-variant/10 relative overflow-hidden flex items-end px-1 gap-[1px]">
+<!-- Simulated Histogram Bars -->
+<div class="flex-1 bg-primary/10 h-[5%]"></div>
+<div class="flex-1 bg-primary/20 h-[12%]"></div>
+<div class="flex-1 bg-primary/30 h-[28%]"></div>
+<div class="flex-1 bg-primary/40 h-[65%]"></div>
+<div class="flex-1 bg-primary/60 h-[92%]"></div>
+<div class="flex-1 bg-primary/80 h-[85%]"></div>
+<div class="flex-1 bg-primary/60 h-[45%]"></div>
+<div class="flex-1 bg-primary/40 h-[25%]"></div>
+<div class="flex-1 bg-primary/20 h-[15%]"></div>
+<div class="flex-1 bg-primary/10 h-[8%]"></div>
+<div class="flex-1 bg-primary/5 h-[4%]"></div>
+<div class="flex-1 bg-primary/5 h-[2%]"></div>
+<!-- Peak Indicator Line -->
+<div class="absolute left-[42%] top-0 bottom-0 w-px bg-tertiary/40 border-l border-dashed border-tertiary/20"></div>
+</div>
+</section>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-2 pt-4 border-t border-outline-variant/10 mt-auto">
+<button class="col-span-1 flex items-center justify-center gap-2 p-2 bg-surface-container-high hover:bg-surface-bright rounded text-[11px] font-mono transition-all">
+<span class="material-symbols-outlined text-sm">invert_colors</span>
+                        Invert
+                    </button>
+<button class="col-span-1 flex items-center justify-center gap-2 p-2 bg-surface-container-high hover:bg-surface-bright rounded text-[11px] font-mono transition-all">
+<span class="material-symbols-outlined text-sm">refresh</span>
+                        Reset
+                    </button>
+<button class="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-br from-primary to-primary-container text-on-primary-container rounded font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        Apply Auto-Scale
+                    </button>
+</div>
+</div>
+<!-- Coordinate Panel (Lower Right) -->
+<div class="glass-panel rounded-xl p-4 shadow-xl">
+<div class="flex items-center justify-between gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] uppercase tracking-widest text-primary/60 font-mono">Pointer X/Y</span>
+<span class="text-xs font-mono text-on-surface">4128.01 / 2064.55</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[9px] uppercase tracking-widest text-secondary/60 font-mono">Flux Value</span>
+<span class="text-xs font-mono text-secondary">2,841 ADU</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full z-50 flex items-center justify-between px-4 bg-[#0b0e14] dark:bg-[#0b0e14] border-t border-[#1d2026] h-8">
+<div class="text-[#c3f5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">
+            RA: 14h 29m 06s | Dec: -62° 40' 46" | FOV: 0.45° | Zoom: 12x
+        </div>
+<div class="flex items-center gap-6">
+<a class="text-[#e1e2eb] opacity-60 hover:text-[#00e5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase transition-colors" href="#">System Logs</a>
+<div class="flex items-center gap-2 text-[#00e5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_#c3f5ff]"></span>
+                WebSocket: Connected
+            </div>
+</div>
+</footer>
+</body></html>

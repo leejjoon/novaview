@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NovaView | System &amp; Remote Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-bright": "#363940",
+              "secondary": "#e0b6ff",
+              "surface-container-lowest": "#0b0e14",
+              "primary-fixed": "#9cf0ff",
+              "on-primary-fixed-variant": "#004f58",
+              "on-primary": "#00363d",
+              "inverse-on-surface": "#2e3037",
+              "on-surface": "#e1e2eb",
+              "surface-tint": "#00daf3",
+              "on-tertiary-container": "#775200",
+              "on-primary-fixed": "#001f24",
+              "primary": "#c3f5ff",
+              "background": "#10131a",
+              "on-secondary-fixed": "#2e004e",
+              "on-background": "#e1e2eb",
+              "surface-container-high": "#272a31",
+              "tertiary-fixed-dim": "#ffba38",
+              "surface-container": "#1d2026",
+              "on-error-container": "#ffdad6",
+              "primary-container": "#00e5ff",
+              "on-tertiary-fixed": "#281900",
+              "on-secondary-container": "#d7a4ff",
+              "tertiary": "#ffe9cd",
+              "surface-dim": "#10131a",
+              "on-tertiary-fixed-variant": "#604100",
+              "error": "#ffb4ab",
+              "primary-fixed-dim": "#00daf3",
+              "tertiary-container": "#ffc769",
+              "outline": "#849396",
+              "tertiary-fixed": "#ffdeac",
+              "on-error": "#690005",
+              "error-container": "#93000a",
+              "on-tertiary": "#432c00",
+              "secondary-container": "#6d11ad",
+              "surface-container-highest": "#32353c",
+              "on-secondary-fixed-variant": "#6a0baa",
+              "on-secondary": "#4c007d",
+              "surface": "#10131a",
+              "secondary-fixed-dim": "#e0b6ff",
+              "surface-container-low": "#191c22",
+              "on-surface-variant": "#bac9cc",
+              "on-primary-container": "#00626e",
+              "secondary-fixed": "#f2daff",
+              "outline-variant": "#3b494c",
+              "surface-variant": "#32353c",
+              "inverse-surface": "#e1e2eb",
+              "inverse-primary": "#006875"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["JetBrains Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: #0b0e14; }
+      ::-webkit-scrollbar-thumb { background: #3b494c; border-radius: 2px; }
+      ::-webkit-scrollbar-thumb:hover { background: #00e5ff; }
+      .glass-overlay {
+        background: rgba(39, 42, 49, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(59, 73, 76, 0.15);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 bg-[#10131a] dark:bg-[#10131a] border-b border-[#1d2026] h-12">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#c3f5ff] font-headline uppercase">NovaView</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff] transition-colors duration-150 ease-in-out font-headline tracking-tight text-sm uppercase" href="#">File</a>
+<a class="text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff] transition-colors duration-150 ease-in-out font-headline tracking-tight text-sm uppercase" href="#">View</a>
+<a class="text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff] transition-colors duration-150 ease-in-out font-headline tracking-tight text-sm uppercase" href="#">Windows</a>
+<a class="text-[#e1e2eb] opacity-70 hover:bg-[#191c22] hover:text-[#00e5ff] transition-colors duration-150 ease-in-out font-headline tracking-tight text-sm uppercase" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#c3f5ff] cursor-pointer hover:bg-[#191c22] p-1 rounded transition-colors">sensors</span>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-12 bottom-0 z-40 flex flex-col items-center py-4 bg-[#191c22] dark:bg-[#191c22] border-r border-[#1d2026] w-20">
+<div class="flex flex-col gap-6 w-full">
+<div class="flex flex-col items-center gap-1 group cursor-pointer text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform p-2">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] text-[11px] font-medium">Dashboard</span>
+</div>
+<div class="flex flex-col items-center gap-1 group cursor-pointer text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform p-2">
+<span class="material-symbols-outlined">functions</span>
+<span class="font-['Inter'] text-[11px] font-medium">Workspace</span>
+</div>
+<div class="flex flex-col items-center gap-1 group cursor-pointer text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform p-2">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-['Inter'] text-[11px] font-medium">Toolkit</span>
+</div>
+<!-- Active State: Status -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer bg-[#1d2026] text-[#00e5ff] border-l-2 border-[#00e5ff] scale-95 active:scale-90 transition-transform p-2">
+<span class="material-symbols-outlined">router</span>
+<span class="font-['Inter'] text-[11px] font-medium">Status</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-20 mt-12 mb-8 p-6 h-[calc(100vh-5rem)] overflow-y-auto bg-background">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- WebSocket Connection Status Banner -->
+<section class="bg-surface-container-low p-4 flex items-center justify-between border-l-4 border-primary shadow-lg">
+<div class="flex items-center gap-4">
+<div class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+</div>
+<div>
+<h2 class="font-mono text-sm font-medium text-primary tracking-tight">WebSocket Server: Listening</h2>
+<p class="font-mono text-xs text-outline">ws://127.0.0.1:8765</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-container-highest hover:bg-surface-bright text-xs font-headline uppercase tracking-wider text-on-surface transition-colors rounded-sm">Restart WebSocket Server</button>
+<button class="px-3 py-1 bg-surface-container-highest hover:bg-surface-bright text-xs font-headline uppercase tracking-wider text-on-surface transition-colors rounded-sm">Export Logs</button>
+</div>
+</section>
+<!-- Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column: Active Clients & Cache -->
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<!-- Active Clients Table Card -->
+<div class="bg-surface-container-low overflow-hidden">
+<div class="px-4 py-3 bg-surface-container flex justify-between items-center">
+<h3 class="font-headline text-sm font-bold uppercase tracking-widest text-primary-fixed-dim">Active Python Clients</h3>
+<span class="text-[10px] font-mono text-outline">Total Connections: 04</span>
+</div>
+<div class="p-0">
+<table class="w-full text-left font-body text-xs border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-outline uppercase text-[10px] tracking-tighter">
+<th class="px-4 py-2 font-medium">Client ID</th>
+<th class="px-4 py-2 font-medium">IP Address</th>
+<th class="px-4 py-2 font-medium">Uptime</th>
+<th class="px-4 py-2 font-medium">Last Command</th>
+<th class="px-4 py-2 font-medium text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-4 py-3 font-mono text-primary">py-client-α</td>
+<td class="px-4 py-3 font-mono">192.168.1.42</td>
+<td class="px-4 py-3 font-mono">02:45:12</td>
+<td class="px-4 py-3"><code class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-tertiary">set_view</code></td>
+<td class="px-4 py-3 text-right"><span class="h-2 w-2 rounded-full bg-primary inline-block"></span></td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-4 py-3 font-mono text-primary">jupyter-nv-01</td>
+<td class="px-4 py-3 font-mono">127.0.0.1</td>
+<td class="px-4 py-3 font-mono">00:12:05</td>
+<td class="px-4 py-3"><code class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-tertiary">load_fits</code></td>
+<td class="px-4 py-3 text-right"><span class="h-2 w-2 rounded-full bg-primary inline-block"></span></td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-4 py-3 font-mono text-primary">node-relay-x</td>
+<td class="px-4 py-3 font-mono">10.0.0.15</td>
+<td class="px-4 py-3 font-mono">14:22:31</td>
+<td class="px-4 py-3"><code class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-tertiary">sync_coords</code></td>
+<td class="px-4 py-3 text-right"><span class="h-2 w-2 rounded-full bg-primary inline-block"></span></td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors opacity-50">
+<td class="px-4 py-3 font-mono text-outline">py-client-β</td>
+<td class="px-4 py-3 font-mono">192.168.1.45</td>
+<td class="px-4 py-3 font-mono">--:--:--</td>
+<td class="px-4 py-3"><code class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-outline">disconnect</code></td>
+<td class="px-4 py-3 text-right"><span class="h-2 w-2 rounded-full bg-error inline-block"></span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- LRU Cache Performance Bento -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-surface-container-low p-4 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<h4 class="font-headline text-[10px] uppercase tracking-widest text-outline">LRU Cache Hit Rate</h4>
+<span class="text-xs font-mono text-primary-fixed-dim">94.2%</span>
+</div>
+<div class="mt-4 h-24 flex items-end gap-1">
+<!-- Simulated sparkline -->
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[60%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[85%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[70%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[95%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[90%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[92%] hover:bg-primary transition-colors cursor-help"></div>
+<div class="w-full bg-surface-container-highest rounded-t-sm h-[88%] hover:bg-primary transition-colors cursor-help"></div>
+</div>
+<p class="mt-2 text-[10px] text-outline italic">Moka-rs cache instances: 3 active</p>
+</div>
+<div class="bg-surface-container-low p-4 relative overflow-hidden">
+<h4 class="font-headline text-[10px] uppercase tracking-widest text-outline">Memory Consumption</h4>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-mono text-secondary">1.42</span>
+<span class="text-xs font-headline uppercase text-outline">GiB</span>
+</div>
+<div class="mt-4 w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[64%] shadow-[0_0_8px_rgba(224,182,255,0.4)]"></div>
+</div>
+<div class="mt-6 flex justify-between items-center">
+<button class="text-[10px] font-headline uppercase text-secondary hover:underline">Clear LRU Cache</button>
+<span class="text-[10px] font-mono text-outline">Limit: 2.0 GiB</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Event Log -->
+<div class="col-span-12 lg:col-span-5 flex flex-col h-full min-h-[500px]">
+<div class="flex-1 bg-surface-container-lowest flex flex-col border border-outline-variant/20 rounded-lg overflow-hidden shadow-2xl">
+<div class="px-4 py-2 bg-surface-container-high border-b border-outline-variant/20 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xs text-primary">terminal</span>
+<h3 class="font-headline text-[10px] font-bold uppercase tracking-widest text-on-surface">System Event Log</h3>
+</div>
+<div class="flex gap-3">
+<span class="w-2 h-2 rounded-full bg-error/40"></span>
+<span class="w-2 h-2 rounded-full bg-tertiary/40"></span>
+<span class="w-2 h-2 rounded-full bg-primary/40"></span>
+</div>
+</div>
+<div class="flex-1 p-4 font-mono text-[11px] overflow-y-auto leading-relaxed">
+<div class="space-y-2">
+<p class="text-outline"><span class="text-surface-bright">[2023-10-27 14:22:01]</span> <span class="text-primary-container">INFO:</span> Server initialized on port 8765</p>
+<p class="text-on-surface"><span class="text-surface-bright">[2023-10-27 14:22:05]</span> <span class="text-secondary">RECV:</span> { "cmd": "load_fits", "path": "/data/obs_234.fits" }</p>
+<p class="text-tertiary"><span class="text-surface-bright">[2023-10-27 14:22:06]</span> <span class="text-tertiary-fixed-dim">RUST:</span> Moka cache miss - disk I/O started</p>
+<p class="text-on-surface"><span class="text-surface-bright">[2023-10-27 14:22:08]</span> <span class="text-primary">SEND:</span> { "status": "ok", "metadata": { "dim": [2048, 2048] } }</p>
+<p class="text-on-surface"><span class="text-surface-bright">[2023-10-27 14:22:12]</span> <span class="text-secondary">RECV:</span> { "cmd": "set_view", "zoom": 12, "center": [14.48, -62.67] }</p>
+<p class="text-on-surface"><span class="text-surface-bright">[2023-10-27 14:22:13]</span> <span class="text-primary">SEND:</span> { "status": "ack", "latency_ms": 1.2 }</p>
+<p class="text-error"><span class="text-surface-bright">[2023-10-27 14:22:45]</span> <span class="text-error">WARN:</span> Client py-client-β heartbeat timeout</p>
+<p class="text-outline italic">-- tailing system logs --</p>
+<p class="text-on-surface animate-pulse"><span class="text-surface-bright">[2023-10-27 14:22:50]</span> <span class="text-secondary">RECV:</span> { "cmd": "get_status" } _</p>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low border-t border-outline-variant/20 flex items-center gap-2">
+<span class="text-primary-container font-mono text-[10px]">$</span>
+<input class="bg-transparent border-none focus:ring-0 text-[11px] font-mono text-primary-fixed w-full placeholder:text-outline/40" placeholder="Send manual JSON command..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Visualization Viewport (System Overview Map) -->
+<section class="h-64 bg-surface-container-low rounded-lg relative overflow-hidden group">
+<div class="absolute inset-0 opacity-20 pointer-events-none">
+<div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#3b494c_1px,_transparent_1px)] bg-[length:24px_24px]"></div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl text-outline-variant mb-2">hub</span>
+<h3 class="font-headline text-xs uppercase tracking-[0.3em] text-outline">Compute Node Topology</h3>
+<p class="text-[10px] font-mono text-outline/50 mt-1">Global distribution of relay edge points</p>
+</div>
+</div>
+<!-- Interactive Elements -->
+<div class="absolute bottom-4 left-4 flex gap-4">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_#c3f5ff]"></span>
+<span class="text-[10px] font-mono uppercase text-on-surface">Main: Active</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-tertiary"></span>
+<span class="text-[10px] font-mono uppercase text-on-surface">Relay: Syncing</span>
+</div>
+</div>
+<!-- Abstract Data Vis Overlay -->
+<img class="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-screen pointer-events-none" data-alt="Abstract glowing network node diagram for system topology" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxkWZsgQ4IXJ6bq7agCGLBHb-rGI58a4MLZPbITo6gE7jetmTgH2NySH4eFuduHwXn_MsJup5KePXoGsE-xv1DlehILfGEgLH9oom1azOwMJLdS0v_sxdKT1tGaWP_-n4byMsbs9cTBeh2ioRwa0jyBIPGqlJ0_6VUpKdfERX3zJ3yEnjwzNWDWk6ZkRFNku1QnL55KJ4ouE2PoYDVVFyVLOosIiqLsKD9fhR4zb8PjYBPWJ_dK5D__YnO5lVlCjFNUy9cFhiBTwcg"/>
+</section>
+</div>
+</main>
+<!-- Footer Bar -->
+<footer class="fixed bottom-0 w-full z-50 flex items-center justify-between px-4 bg-[#0b0e14] dark:bg-[#0b0e14] border-t border-[#1d2026] h-8">
+<div class="flex items-center gap-4">
+<span class="text-[#c3f5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">RA: 14h 29m 06s | Dec: -62° 40' 46" | FOV: 0.45° | Zoom: 12x</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="text-[#e1e2eb] opacity-60 hover:text-[#00e5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase transition-colors" href="#">System Logs</a>
+<div class="flex items-center gap-2">
+<span class="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_4px_#c3f5ff]"></span>
+<span class="text-[#00e5ff] font-['JetBrains_Mono'] text-[10px] tracking-widest uppercase">WebSocket: Connected</span>
+</div>
+</div>
+</footer>
+</body></html>
