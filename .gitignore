@@ -1,0 +1,6 @@
+hips_data/
+node_modules/
+dist/
+target/
+*.log
+.DS_Store
