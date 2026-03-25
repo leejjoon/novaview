@@ -15,6 +15,8 @@ function log(msg: string) {
     invoke('log_message', { msg });
 }
 
+let SURVEY_BASE_URL = 'hips-compute://local_survey';
+
 // Panel toggle helpers
 function setupPanelToggle(btnId: string, panelId: string) {
     const btn = document.getElementById(btnId);
@@ -45,20 +47,28 @@ const checkA = setInterval(() => {
         clearInterval(checkA);
         log("Aladin object found, initializing...");
 
-        A.init.then(() => {
-            const aladin = A.aladin('#aladin-lite-container', {
-                survey: 'hips-compute://local_survey',
-                cooFrame: 'galactic',
-                showLayersControl: false,
-                showFullscreenControl: false,
-                showReticleControl: false,
-                showZoomControl: false,
-                showCooLocation: false,
-                showProjectionControl: false,
-                showContextMenu: false,
-                showFrame: false,
-                showStatusBar: false,
-            });
+        invoke<string | null>('get_initial_survey').then((surveyUrl) => {
+            if (surveyUrl) {
+                SURVEY_BASE_URL = surveyUrl;
+                log(`Using provided survey URL: ${SURVEY_BASE_URL}`);
+            } else {
+                log(`Using default survey URL: ${SURVEY_BASE_URL}`);
+            }
+
+            A.init.then(() => {
+                const aladin = A.aladin('#aladin-lite-container', {
+                    survey: SURVEY_BASE_URL,
+                    cooFrame: 'galactic',
+                    showLayersControl: false,
+                    showFullscreenControl: false,
+                    showReticleControl: false,
+                    showZoomControl: false,
+                    showCooLocation: false,
+                    showProjectionControl: false,
+                    showContextMenu: false,
+                    showFrame: false,
+                    showStatusBar: false,
+                });
 
             // Event Hooks for Bottom Right Coord Panel
             aladin.on('positionChanged', () => {
@@ -77,7 +87,6 @@ const checkA = setInterval(() => {
             const DEFAULT_STRETCH  = 'linear';
             const DEFAULT_VMIN = -0.5;
             const DEFAULT_VMAX = 15.0;
-            const SURVEY_BASE_URL = 'hips-compute://local_survey';
 
             // Helper: read current UI values
             const getCurrentSettings = () => ({
@@ -232,10 +241,17 @@ const checkA = setInterval(() => {
 
 
 
-            fetch('hips-compute://local_survey/properties')
+            // Determine properties URL based on whether it is a remote hips or local
+            const propertiesUrl = SURVEY_BASE_URL.startsWith('http') 
+                ? `${SURVEY_BASE_URL}/properties` 
+                : `${SURVEY_BASE_URL}/properties`;
+
+            fetch(propertiesUrl)
                 .then(res => res.text())
                 .then(propsText => {
                     let ra = 86.40, dec = 28.93, fov = 10.0;
+                    let formatTypes: string[] = ['jpeg']; // Default to jpeg if missing
+                    
                     propsText.split('\n').forEach(line => {
                         let match = line.match(/^\s*hips_initial_ra\s*=\s*(.*)/);
                         if (match) ra = parseFloat(match[1]);
@@ -243,15 +259,80 @@ const checkA = setInterval(() => {
                         if (match) dec = parseFloat(match[1]);
                         match = line.match(/^\s*hips_initial_fov\s*=\s*(.*)/);
                         if (match) fov = parseFloat(match[1]);
+                        match = line.match(/^\s*hips_tile_format\s*=\s*(.*)/);
+                        if (match) formatTypes = match[1].split(/\s+/).filter(f => f.trim().length > 0);
                     });
 
                     aladin.gotoRaDec(ra, dec);
                     aladin.setFoV(fov);
-                    
                     log(`Aladin dynamically centered to RA=${ra}, DEC=${dec}, FOV=${fov}`);
+
+                    // Format Auto-Detection Logic
+                    let activeFormat = formatTypes.includes('fits') ? 'fits' : (formatTypes.includes('jpeg') ? 'jpeg' : formatTypes[0] || 'jpeg');
+                    const formatLabel = document.getElementById('label-format-auto');
+                    if (formatLabel) formatLabel.innerText = `Auto: ${activeFormat.toUpperCase()}`;
+
+                    const updateFormatUI = (format: string) => {
+                        document.querySelectorAll('.format-btn').forEach(b => {
+                            b.classList.remove('border-primary', 'text-primary', 'bg-surface-container-low');
+                            b.classList.add('border-transparent', 'text-on-surface/60', 'bg-surface-container-lowest');
+                            const ic = b.querySelector('.material-symbols-outlined') as HTMLElement | null;
+                            if (ic) { ic.innerText = 'radio_button_unchecked'; ic.style.fontVariationSettings = "'FILL' 0"; }
+                        });
+                        const cur = document.querySelector(`.format-btn[data-format="${format}"]`) as HTMLElement | null;
+                        if (cur) {
+                            cur.classList.remove('border-transparent', 'text-on-surface/60', 'bg-surface-container-lowest');
+                            cur.classList.add('border-primary', 'text-primary', 'bg-surface-container-low');
+                            const icon = cur.querySelector('.material-symbols-outlined') as HTMLElement | null;
+                            if (icon) { icon.innerText = 'radio_button_checked'; icon.style.fontVariationSettings = "'FILL' 1"; }
+                        }
+                    };
+
+                    document.querySelectorAll('.format-btn').forEach(btn => {
+                        const fmt = btn.getAttribute('data-format');
+                        if (!formatTypes.includes(fmt || '')) {
+                            btn.setAttribute('disabled', 'true');
+                        }
+                        
+                        btn.addEventListener('click', (e) => {
+                            const newFormat = (e.currentTarget as HTMLElement).getAttribute('data-format');
+                            if (!newFormat || (e.currentTarget as HTMLButtonElement).disabled) return;
+                            
+                            updateFormatUI(newFormat);
+                            
+                            // Re-apply layer with new format
+                            const { colormap, stretch, vmin, vmax } = getCurrentSettings();
+                            try {
+                                const survey = aladin.newImageSurvey(SURVEY_BASE_URL, { imgFormat: newFormat });
+                                applyToSurvey(survey, colormap, stretch, vmin, vmax);
+                                aladin.setBaseImageLayer(survey);
+                                setTimeout(() => {
+                                    applyImgOptions({ colormap, stretch, minCut: vmin, maxCut: vmax });
+                                }, 500);
+                            } catch (err) {
+                                log("Error changing format: " + err);
+                            }
+                        });
+                    });
+
+                    updateFormatUI(activeFormat);
+
+                    // Force initial survey to prefer FITS if available (Aladin might default to JPEG)
+                    if (activeFormat === 'fits') {
+                         const { colormap, stretch, vmin, vmax } = getCurrentSettings();
+                         try {
+                             const survey = aladin.newImageSurvey(SURVEY_BASE_URL, { imgFormat: 'fits' });
+                             applyToSurvey(survey, colormap, stretch, vmin, vmax);
+                             aladin.setBaseImageLayer(survey);
+                         } catch (err) {
+                             log("Error setting initial FITS format: " + err);
+                         }
+                    }
+
                 })
                 .catch(err => log("Failed to fetch properties: " + err));
 
         }).catch((e: Error) => log("Aladin init error: " + e));
+        }).catch((e: Error) => log("Get initial survey error: " + e));
     }
 }, 100);

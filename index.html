@@ -123,6 +123,22 @@
           <span class="material-symbols-outlined text-primary/30 text-base">science</span>
         </div>
 
+        <!-- Format Selector -->
+        <section class="space-y-1.5" id="format-selector-section">
+          <div class="flex items-center justify-between">
+            <label class="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/60">Data Format</label>
+            <span id="label-format-auto" class="text-[9px] text-secondary font-mono tracking-wider italic">Auto: FITS</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5" id="format-toggles">
+            <button data-format="jpeg" class="format-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-low rounded border-l-2 border-primary text-[11px] font-mono text-primary disabled:opacity-30 disabled:cursor-not-allowed">
+              <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span> JPEG
+            </button>
+            <button data-format="fits" class="format-btn flex items-center gap-1.5 px-2 py-1.5 bg-surface-container-lowest rounded border-l-2 border-transparent text-[11px] font-mono text-on-surface/60 hover:bg-surface-container-high transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <span class="material-symbols-outlined text-sm">radio_button_unchecked</span> FITS
+            </button>
+          </div>
+        </section>
+
         <!-- Colormap Selector -->
         <section class="space-y-1.5">
           <label class="text-[9px] uppercase tracking-[0.2em] font-bold text-primary/60">Colormap</label>

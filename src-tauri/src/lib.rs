@@ -14,6 +14,15 @@ fn log_message(msg: String) {
     println!("JS_LOG: {}", msg);
 }
 
+#[tauri::command]
+fn get_initial_survey(state: tauri::State<'_, InitialSurveyState>) -> Option<String> {
+    state.survey.clone()
+}
+
+struct InitialSurveyState {
+    survey: Option<String>,
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let args = CliArgs::parse();
@@ -22,7 +31,8 @@ pub fn run() {
     let survey = args.survey.clone();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![log_message])
+        .manage(InitialSurveyState { survey: survey.clone() })
+        .invoke_handler(tauri::generate_handler![log_message, get_initial_survey])
         .setup(move |app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
