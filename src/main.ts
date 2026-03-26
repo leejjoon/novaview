@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import '@fontsource/space-grotesk/300.css';
 import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
@@ -328,6 +329,69 @@ const checkA = setInterval(() => {
                              log("Error setting initial FITS format: " + err);
                          }
                     }
+
+                    // --- Python Remote Control Listener ---
+                    listen('python-command', (event: any) => {
+                        const payload = event.payload;
+                        if (!payload || !payload.command) return;
+
+                        if (payload.command === 'set_survey') {
+                            if (payload.survey) {
+                                SURVEY_BASE_URL = payload.survey;
+                                const currentFormat = document.querySelector('.format-btn.border-primary')?.getAttribute('data-format') || 'jpeg';
+                                const { colormap, stretch, vmin, vmax } = getCurrentSettings();
+                                try {
+                                    const survey = aladin.newImageSurvey(SURVEY_BASE_URL, { imgFormat: currentFormat });
+                                    applyToSurvey(survey, colormap, stretch, vmin, vmax);
+                                    aladin.setBaseImageLayer(survey);
+                                    setTimeout(() => {
+                                        applyImgOptions({ colormap, stretch, minCut: vmin, maxCut: vmax });
+                                    }, 500);
+                                    log(`Survey changed to ${SURVEY_BASE_URL}`);
+                                } catch (err) { log("Error: " + err); }
+                            }
+                        } else if (payload.command === 'set_colormap') {
+                            const { colormap, stretch, vmin, vmax } = payload;
+                            
+                            if (colormap !== undefined) {
+                                const select = document.getElementById('colormap-select') as HTMLSelectElement;
+                                if (select) select.value = colormap;
+                            }
+                            if (stretch !== undefined) {
+                                document.querySelectorAll('.scale-btn').forEach(b => {
+                                    b.classList.remove('border-primary', 'text-primary', 'bg-surface-container-low');
+                                    b.classList.add('border-transparent', 'text-on-surface/60', 'bg-surface-container-lowest');
+                                    const ic = b.querySelector('.material-symbols-outlined') as HTMLElement | null;
+                                    if (ic) { ic.innerText = 'radio_button_unchecked'; ic.style.fontVariationSettings = "'FILL' 0"; }
+                                });
+                                const cur = document.querySelector(`.scale-btn[data-scale="${stretch}"]`) as HTMLElement | null;
+                                if (cur) {
+                                    cur.classList.remove('border-transparent', 'text-on-surface/60', 'bg-surface-container-lowest');
+                                    cur.classList.add('border-primary', 'text-primary', 'bg-surface-container-low');
+                                    const icon = cur.querySelector('.material-symbols-outlined') as HTMLElement | null;
+                                    if (icon) { icon.innerText = 'radio_button_checked'; icon.style.fontVariationSettings = "'FILL' 1"; }
+                                }
+                            }
+                            if (vmin !== undefined) {
+                                const vminInput = document.getElementById('input-vmin') as HTMLInputElement;
+                                if (vminInput) vminInput.value = vmin.toString();
+                            }
+                            if (vmax !== undefined) {
+                                const vmaxInput = document.getElementById('input-vmax') as HTMLInputElement;
+                                if (vmaxInput) vmaxInput.value = vmax.toString();
+                            }
+                            
+                            const newSettings = getCurrentSettings();
+                            applyImgOptions({ colormap: newSettings.colormap, stretch: newSettings.stretch, minCut: newSettings.vmin, maxCut: newSettings.vmax });
+                        } else if (payload.command === 'goto_radec') {
+                            if (payload.ra !== undefined && payload.dec !== undefined) {
+                                aladin.gotoRaDec(payload.ra, payload.dec);
+                            }
+                            if (payload.fov !== undefined) {
+                                aladin.setFoV(payload.fov);
+                            }
+                        }
+                    });
 
                 })
                 .catch(err => log("Failed to fetch properties: " + err));

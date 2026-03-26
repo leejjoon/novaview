@@ -41,9 +41,43 @@ pub fn run() {
                         .build(),
                 )?;
             }
-            if let Some(s) = survey {
+            if let Some(ref s) = survey {
                 log::info!("Starting with survey: {}", s);
             }
+
+            use tauri::Emitter;
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                let addr = "127.0.0.1:8765";
+                let listener = match tokio::net::TcpListener::bind(addr).await {
+                    Ok(l) => l,
+                    Err(e) => {
+                        log::error!("Failed to bind WebSocket server: {}", e);
+                        return;
+                    }
+                };
+                log::info!("WebSocket server listening on ws://{}", addr);
+
+                while let Ok((stream, _)) = listener.accept().await {
+                    let app_handle_clone = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        if let Ok(mut ws_stream) = tokio_tungstenite::accept_async(stream).await {
+                            log::info!("New WebSocket connection");
+                            use futures_util::StreamExt;
+                            while let Some(msg) = ws_stream.next().await {
+                                if let Ok(tokio_tungstenite::tungstenite::Message::Text(text)) = msg {
+                                    if let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) {
+                                        app_handle_clone.emit("python-command", json).unwrap_or_else(|e| log::error!("Emit error: {}", e));
+                                    } else {
+                                        log::warn!("Invalid JSON received via WS: {}", text);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
             Ok(())
         })
         .register_uri_scheme_protocol("hips-compute", move |_app, req| {
