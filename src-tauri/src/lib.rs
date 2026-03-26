@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
-use tauri::http::{Request, Response};
+use tauri::http::Response;
 
 #[derive(Parser, Default, Debug, Clone)]
 #[clap(author, version, about, long_about = None, ignore_errors = true)]
