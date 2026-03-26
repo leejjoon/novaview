@@ -71,6 +71,10 @@ const checkA = setInterval(() => {
                     showStatusBar: false,
                 });
 
+            window.addEventListener('resize', () => {
+                aladin.resize();
+            });
+
             // Event Hooks for Bottom Right Coord Panel
             aladin.on('positionChanged', () => {
                 const center = aladin.getRaDec();
