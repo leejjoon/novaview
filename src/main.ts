@@ -1,5 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import { listen as tauriListen } from "@tauri-apps/api/event";
 import '@fontsource/space-grotesk/300.css';
 import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
@@ -12,11 +12,28 @@ import '@fontsource/inter/600.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import 'material-symbols/outlined.css';
+
+// Check if we are running in Tauri
+const isTauri = (window as any).__TAURI_INTERNALS__ !== undefined;
+
+// Mock invoke and listen if not in Tauri
+const invoke = isTauri ? tauriInvoke : async (cmd: string, args?: any) => {
+    console.log(`[Mock Invoke] ${cmd}`, args);
+    if (cmd === 'get_initial_survey') return null;
+    return null;
+};
+
+const listen = isTauri ? tauriListen : async (event: string, handler: (e: any) => void) => {
+    console.log(`[Mock Listen] ${event}`);
+    return () => {}; // Return unlisten function
+};
+
 function log(msg: string) {
     invoke('log_message', { msg });
 }
 
-let SURVEY_BASE_URL = 'hips-compute://local_survey';
+const DEFAULT_BROWSER_SURVEY = 'https://alasky.cds.unistra.fr/DSS/DSSColor';
+let SURVEY_BASE_URL = isTauri ? 'hips-compute://local_survey' : DEFAULT_BROWSER_SURVEY;
 
 // Panel toggle helpers
 function setupPanelToggle(btnId: string, panelId: string) {

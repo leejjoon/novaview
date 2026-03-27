@@ -18,7 +18,11 @@
   <script type="module">
     import { invoke } from "/node_modules/@tauri-apps/api/core.js";
     window.addEventListener("error", (e) => {
-      invoke('log_message', { msg: `GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}` }).catch(console.error);
+      if (window.__TAURI_INTERNALS__) {
+        invoke('log_message', { msg: `GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}` }).catch(console.error);
+      } else {
+        console.error(`GLOBAL ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
+      }
     });
     console.log("Global error handler installed via module");
   </script>
