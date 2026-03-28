@@ -28,23 +28,29 @@
   </script>
 
   <!-- TOP APP BAR -->
-  <header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 bg-[#10131a] dark:bg-[#10131a] border-b border-[#1d2026] h-12 transition-colors duration-150 ease-in-out">
-    <div class="flex items-center gap-8">
-      <span class="text-xl font-bold tracking-tighter text-[#c3f5ff] font-headline uppercase">NovaView</span>
+  <header data-tauri-drag-region class="fixed top-0 w-full z-50 flex items-center justify-between px-6 bg-[#10131a] dark:bg-[#10131a] border-b border-[#1d2026] h-12 transition-colors duration-150 ease-in-out select-none">
+    <div class="flex items-center gap-8" data-tauri-drag-region>
+      <span class="text-xl font-bold tracking-tighter text-[#c3f5ff] font-headline uppercase" data-tauri-drag-region>NovaView</span>
       <nav class="hidden md:flex items-center gap-6 font-headline tracking-tight text-sm uppercase">
-        <a class="text-[#00e5ff] font-bold transition-colors duration-150 ease-in-out hover:bg-[#191c22] px-2 py-1" href="#">File</a>
-        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#">View</a>
-        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#">Windows</a>
-        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#">Help</a>
+        <a class="text-[#00e5ff] font-bold transition-colors duration-150 ease-in-out hover:bg-[#191c22] px-2 py-1" href="#" onclick="return false;">File</a>
+        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#" onclick="return false;">View</a>
+        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#" onclick="return false;">Windows</a>
+        <a class="text-[#e1e2eb] opacity-70 transition-colors duration-150 ease-in-out hover:bg-[#191c22] hover:text-[#00e5ff] px-2 py-1" href="#" onclick="return false;">Help</a>
       </nav>
     </div>
     <div class="flex items-center gap-4 text-[#c3f5ff]">
-      <div class="flex items-center gap-2 px-2 py-1 bg-surface-container-lowest rounded-full">
+      <div class="flex items-center gap-2 px-2 py-1 bg-surface-container-lowest rounded-full" data-tauri-drag-region>
         <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#c3f5ff]"></span>
         <span class="font-mono text-[10px] uppercase tracking-widest text-primary">WebSocket: Connected</span>
       </div>
       <button id="btn-reload-survey" title="Reload survey (no cache)" class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#191c22] hover:text-[#00e5ff] p-1 transition-colors rounded" style="font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;">refresh</button>
       <button class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#191c22] hover:text-[#00e5ff] p-1 transition-colors">sensors</button>
+      <!-- Window controls (Tauri only) -->
+      <div id="window-controls" class="hidden flex items-center gap-1 ml-2 pl-2 border-l border-[#1d2026]">
+        <button id="btn-minimize" title="Minimize" class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#191c22] hover:text-[#00e5ff] p-1 transition-colors rounded text-base leading-none">remove</button>
+        <button id="btn-maximize" title="Maximize" class="material-symbols-outlined text-[#c3f5ff] hover:bg-[#191c22] hover:text-[#00e5ff] p-1 transition-colors rounded text-base leading-none">crop_square</button>
+        <button id="btn-close" title="Close" class="material-symbols-outlined text-[#c3f5ff] hover:bg-red-800 hover:text-white p-1 transition-colors rounded text-base leading-none">close</button>
+      </div>
     </div>
   </header>
 

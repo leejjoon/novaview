@@ -1,5 +1,6 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { listen as tauriListen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import '@fontsource/space-grotesk/300.css';
 import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
@@ -56,6 +57,43 @@ function setupPanelToggle(btnId: string, panelId: string) {
 
 setupPanelToggle('btn-toggle-data-sources', 'panel-data-sources');
 setupPanelToggle('btn-toggle-analysis', 'panel-analysis-toolkit');
+
+// Window controls (only visible in Tauri with decorations disabled)
+if (isTauri) {
+    const windowControls = document.getElementById('window-controls');
+    if (windowControls) windowControls.classList.remove('hidden');
+
+    const appWindow = getCurrentWindow();
+
+    document.getElementById('btn-minimize')?.addEventListener('click', () => appWindow.minimize());
+    document.getElementById('btn-close')?.addEventListener('click', () => appWindow.close());
+    document.getElementById('btn-maximize')?.addEventListener('click', async () => {
+        const maximized = await appWindow.isMaximized();
+        if (maximized) {
+            appWindow.unmaximize();
+        } else {
+            appWindow.maximize();
+        }
+    });
+
+    // Update maximize icon when window state changes
+    appWindow.onResized(async () => {
+        const maximized = await appWindow.isMaximized();
+        const icon = document.getElementById('btn-maximize') as HTMLElement | null;
+        if (icon) icon.innerText = maximized ? 'filter_none' : 'crop_square';
+    });
+
+    // Explicit startDragging on mousedown for reliable Wayland support.
+    // We skip the drag if the event target is an interactive element (button/a/input).
+    const header = document.querySelector('header');
+    if (header) {
+        header.addEventListener('mousedown', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('button, a, input, select')) return;
+            appWindow.startDragging();
+        });
+    }
+}
 
 log("Waiting for Aladin to load...");
 
