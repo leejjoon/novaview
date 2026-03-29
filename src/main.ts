@@ -125,6 +125,7 @@ const checkA = setInterval(() => {
                     showFrame: false,
                     showStatusBar: false,
                 });
+                (window as any).aladin = aladin;
 
             // Event Hooks for Bottom Right Coord Panel
             aladin.on('positionChanged', () => {
@@ -137,6 +138,123 @@ const checkA = setInterval(() => {
                 const elem = document.getElementById('label-fov');
                 if(elem && fov) elem.innerText = `${fov[0].toFixed(2)}°`;
             });
+
+            const coordSelect = document.getElementById('coord-frame-select') as HTMLSelectElement;
+            if (coordSelect) {
+                coordSelect.addEventListener('change', (e) => {
+                    const frame = (e.target as HTMLSelectElement).value;
+                    aladin.setFrame(frame);
+                });
+            }
+
+            // --- Survey List Management ---
+            const surveyListEl = document.getElementById('survey-list');
+            const btnAddSurvey = document.getElementById('btn-add-survey');
+            const inputNewSurvey = document.getElementById('input-new-survey') as HTMLInputElement;
+
+            const surveys: string[] = [SURVEY_BASE_URL];
+
+            const renderSurveyList = () => {
+                if (!surveyListEl) return;
+                surveyListEl.innerHTML = '';
+                surveys.forEach((surveyUrl, idx) => {
+                    const isSelected = surveyUrl === SURVEY_BASE_URL;
+                    const item = document.createElement('div');
+                    item.className = 'bg-surface-container p-2 rounded flex items-center gap-2 group';
+
+                    const radioContainer = document.createElement('div');
+                    radioContainer.className = 'relative w-4 h-4 flex items-center justify-center';
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'active_layer';
+                    radio.value = surveyUrl;
+                    radio.checked = isSelected;
+                    radio.className = 'appearance-none w-4 h-4 border border-outline rounded-full checked:border-secondary checked:bg-transparent transition-all cursor-pointer';
+
+                    const radioIndicator = document.createElement('div');
+                    radioIndicator.className = 'absolute w-1.5 h-1.5 bg-secondary rounded-full pointer-events-none opacity-0 ' + (isSelected ? 'opacity-100' : 'group-has-[:checked]:opacity-100');
+
+                    radioContainer.appendChild(radio);
+                    radioContainer.appendChild(radioIndicator);
+
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'flex-1 overflow-hidden';
+                    const titleP = document.createElement('p');
+                    titleP.className = 'text-[11px] font-bold text-primary tracking-tight truncate';
+                    titleP.title = surveyUrl;
+                    titleP.innerText = surveyUrl.split('/').pop() || 'Survey ' + (idx + 1);
+
+                    const typeP = document.createElement('p');
+                    typeP.className = 'text-[9px] text-on-surface-variant font-mono truncate';
+                    typeP.innerText = surveyUrl;
+
+                    labelDiv.appendChild(titleP);
+                    labelDiv.appendChild(typeP);
+
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity';
+
+                    const btnRemove = document.createElement('button');
+                    btnRemove.className = 'material-symbols-outlined text-sm hover:text-red-400';
+                    btnRemove.innerText = 'delete';
+                    btnRemove.title = 'Remove survey';
+                    btnRemove.onclick = (e) => {
+                        e.stopPropagation();
+                        surveys.splice(idx, 1);
+                        if (isSelected && surveys.length > 0) {
+                            SURVEY_BASE_URL = surveys[0];
+                            document.getElementById('btn-reload-survey')?.click();
+                        } else if (isSelected) {
+                            SURVEY_BASE_URL = '';
+                        }
+                        renderSurveyList();
+                    };
+
+                    actionsDiv.appendChild(btnRemove);
+
+                    item.appendChild(radioContainer);
+                    item.appendChild(labelDiv);
+                    item.appendChild(actionsDiv);
+
+                    radio.addEventListener('change', () => {
+                        if (radio.checked) {
+                            SURVEY_BASE_URL = surveyUrl;
+                            document.getElementById('btn-reload-survey')?.click();
+                            renderSurveyList();
+                        }
+                    });
+
+                    item.addEventListener('click', (e) => {
+                        if (e.target !== radio && e.target !== btnRemove) {
+                            radio.checked = true;
+                            radio.dispatchEvent(new Event('change'));
+                        }
+                    });
+
+                    surveyListEl.appendChild(item);
+                });
+            };
+
+            renderSurveyList();
+
+            if (btnAddSurvey && inputNewSurvey) {
+                btnAddSurvey.addEventListener('click', () => {
+                    const newUrl = inputNewSurvey.value.trim();
+                    if (newUrl && !surveys.includes(newUrl)) {
+                        surveys.push(newUrl);
+                        inputNewSurvey.value = '';
+                        SURVEY_BASE_URL = newUrl;
+                        document.getElementById('btn-reload-survey')?.click();
+                        renderSurveyList();
+                    }
+                });
+                inputNewSurvey.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        btnAddSurvey.click();
+                    }
+                });
+            }
 
             // --- Default init: apply colormap + cuts to match the UI defaults ---
             const DEFAULT_COLORMAP = 'viridis';
@@ -262,6 +380,22 @@ const checkA = setInterval(() => {
                     cutDebounce = setTimeout(applyCuts, 600);
                 });
             });
+
+            // Step adjustment for vmin/vmax
+            const adjustValue = (id: string, delta: number) => {
+                const el = document.getElementById(id) as HTMLInputElement;
+                if (!el) return;
+                const current = parseFloat(el.value);
+                if (!isNaN(current)) {
+                    el.value = (current + delta).toFixed(2);
+                    applyCuts();
+                }
+            };
+
+            document.getElementById('btn-vmin-dec')?.addEventListener('click', () => adjustValue('input-vmin', -0.5));
+            document.getElementById('btn-vmin-inc')?.addEventListener('click', () => adjustValue('input-vmin', 0.5));
+            document.getElementById('btn-vmax-dec')?.addEventListener('click', () => adjustValue('input-vmax', -0.5));
+            document.getElementById('btn-vmax-inc')?.addEventListener('click', () => adjustValue('input-vmax', 0.5));
 
             // Manual apply button (still useful for precision entry)
             document.getElementById('btn-apply-cuts')?.addEventListener('click', applyCuts);
