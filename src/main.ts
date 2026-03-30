@@ -488,6 +488,9 @@ const checkA = setInterval(() => {
                             const newFormat = (e.currentTarget as HTMLElement).getAttribute('data-format');
                             if (!newFormat || (e.currentTarget as HTMLButtonElement).disabled) return;
                             
+                            const currentFormat = document.querySelector('.format-btn.border-primary')?.getAttribute('data-format');
+                            if (newFormat === currentFormat) return;
+
                             updateFormatUI(newFormat);
                             
                             // Re-apply layer with new format
@@ -501,6 +504,7 @@ const checkA = setInterval(() => {
                                 }, 500);
                             } catch (err) {
                                 log("Error changing format: " + err);
+                                try { aladin.setBaseImageLayer(SURVEY_BASE_URL); } catch (_) {}
                             }
                         });
                     });
