@@ -181,9 +181,18 @@ const checkA = setInterval(() => {
         invoke<string[]>('get_initial_survey').then((surveyUrls) => {
             let initialSurveys = surveyUrls;
             if (!initialSurveys || initialSurveys.length === 0) {
-                initialSurveys = [isTauri ? 'hips-compute://local_survey' : DEFAULT_BROWSER_SURVEY];
+                initialSurveys = [isTauri ? 'hips-compute://local/hips_data/test_hips' : DEFAULT_BROWSER_SURVEY];
                 log(`Using default survey URL: ${initialSurveys[0]}`);
             } else {
+                initialSurveys = initialSurveys.map(s => {
+                    if (s.startsWith('http')) return s;
+                    if (s.startsWith('hips-compute')) return s;
+                    if (s.startsWith('redis://')) {
+                        return s.replace('redis://', 'hips-compute://redis/');
+                    }
+                    // Local path
+                    return `hips-compute://local/${s}`;
+                });
                 log(`Using provided survey URLs: ${initialSurveys.join(', ')}`);
             }
 
