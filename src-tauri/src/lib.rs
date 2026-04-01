@@ -5,8 +5,8 @@ use tauri::http::Response;
 #[derive(Parser, Default, Debug, Clone)]
 #[clap(author, version, about, long_about = None, ignore_errors = true)]
 pub struct CliArgs {
-    #[clap(long, help = "Survey URI to load on startup")]
-    pub survey: Option<String>,
+    #[clap(long, help = "Survey URIs to load on startup")]
+    pub survey: Vec<String>,
 }
 
 #[tauri::command]
@@ -15,12 +15,12 @@ fn log_message(msg: String) {
 }
 
 #[tauri::command]
-fn get_initial_survey(state: tauri::State<'_, InitialSurveyState>) -> Option<String> {
-    state.survey.clone()
+fn get_initial_survey(state: tauri::State<'_, InitialSurveyState>) -> Vec<String> {
+    state.surveys.clone()
 }
 
 struct InitialSurveyState {
-    survey: Option<String>,
+    surveys: Vec<String>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -28,10 +28,10 @@ pub fn run() {
     let args = CliArgs::parse();
 
     #[allow(unused_variables)]
-    let survey = args.survey.clone();
+    let surveys = args.survey.clone();
 
     tauri::Builder::default()
-        .manage(InitialSurveyState { survey: survey.clone() })
+        .manage(InitialSurveyState { surveys: surveys.clone() })
         .invoke_handler(tauri::generate_handler![log_message, get_initial_survey])
         .setup(move |app| {
             if cfg!(debug_assertions) {
@@ -41,8 +41,8 @@ pub fn run() {
                         .build(),
                 )?;
             }
-            if let Some(ref s) = survey {
-                log::info!("Starting with survey: {}", s);
+            if !surveys.is_empty() {
+                log::info!("Starting with surveys: {:?}", surveys);
             }
 
             use tauri::Emitter;

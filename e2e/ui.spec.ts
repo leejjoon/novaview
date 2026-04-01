@@ -38,7 +38,8 @@ test('UI updates and interactions', async ({ page }) => {
   await coordSelect.selectOption('icrs');
 
   const frameValue = await page.evaluate(() => {
-    return (window as any).aladin.getFrame();
+    const aladins = (window as any).aladinInstances;
+    return aladins ? aladins[0].getFrame() : (window as any).aladin?.getFrame();
   });
   expect(frameValue).toBe('ICRS');
 
