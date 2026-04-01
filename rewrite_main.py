@@ -124,7 +124,7 @@ function updateLayout(mode: string, count: number) {
     if (!viewportsContainer) return;
 
     // Reset classes
-    viewportsContainer.className = 'absolute inset-0 bg-gradient-to-br from-surface to-surface-container-lowest z-0 grid gap-1';
+    viewportsContainer.className = 'relative w-full h-full bg-gradient-to-br from-surface to-surface-container-lowest z-0 grid gap-1';
 
     if (mode === 'single' || count === 1) {
         viewportsContainer.classList.add('grid-cols-1', 'grid-rows-1');
