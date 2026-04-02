@@ -1,4 +1,6 @@
-import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import re
+
+new_content = r"""import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { listen as tauriListen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import '@fontsource/space-grotesk/300.css';
@@ -176,23 +178,13 @@ const checkA = setInterval(() => {
     if (A) {
         clearInterval(checkA);
         log("Aladin object found, initializing...");
-        (window as any).aladinInstances = aladinInstances;
 
         invoke<string[]>('get_initial_survey').then((surveyUrls) => {
             let initialSurveys = surveyUrls;
             if (!initialSurveys || initialSurveys.length === 0) {
-                initialSurveys = [isTauri ? 'hips-compute://local/hips_data/test_hips' : DEFAULT_BROWSER_SURVEY];
+                initialSurveys = [isTauri ? 'hips-compute://local_survey' : DEFAULT_BROWSER_SURVEY];
                 log(`Using default survey URL: ${initialSurveys[0]}`);
             } else {
-                initialSurveys = initialSurveys.map(s => {
-                    if (s.startsWith('http')) return s;
-                    if (s.startsWith('hips-compute')) return s;
-                    if (s.startsWith('redis://')) {
-                        return s.replace('redis://', 'hips-compute://redis/');
-                    }
-                    // Local path
-                    return `hips-compute://local/${s}`;
-                });
                 log(`Using provided survey URLs: ${initialSurveys.join(', ')}`);
             }
 
@@ -597,7 +589,7 @@ const checkA = setInterval(() => {
                     .then(propsText => {
                         let ra = 86.40, dec = 28.93, fov = 10.0;
                         let formatTypes: string[] = ['jpeg'];
-                        
+
                         propsText.split('\n').forEach(line => {
                             let match = line.match(/^\s*hips_initial_ra\s*=\s*(.*)/);
                             if (match) ra = parseFloat(match[1]);
@@ -760,3 +752,7 @@ const checkA = setInterval(() => {
         }).catch((e: Error) => log("Get initial survey error: " + e));
     }
 }, 100);
+"""
+
+with open("src/main.ts", "w") as f:
+    f.write(new_content)

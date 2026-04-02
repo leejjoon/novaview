@@ -61,6 +61,11 @@
         <span class="material-symbols-outlined text-2xl">settings_input_component</span>
         <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Tool</span>
       </button>
+      <!-- Layout: toggles Viewport Layout Toolkit panel -->
+      <button id="btn-toggle-layout" class="group flex flex-col items-center gap-1 w-full py-3 text-[#e1e2eb] opacity-50 hover:bg-[#1d2026] hover:opacity-100 scale-95 active:scale-90 transition-transform cursor-pointer border-l-2 border-transparent" title="Toggle Layout Toolkit">
+        <span class="material-symbols-outlined text-2xl">grid_view</span>
+        <span class="font-label text-[11px] font-medium uppercase text-center w-full block">Layout</span>
+      </button>
     </div>
     <div class="mt-auto flex flex-col items-center opacity-30">
       <span class="font-mono text-[9px] rotate-180 [writing-mode:vertical-lr]">v1.0.4-beta</span>
@@ -69,7 +74,10 @@
 
   <!-- MAIN CANVAS -->
   <main class="fixed inset-0 pt-12 pl-20 pb-8 bg-surface overflow-hidden">
-    <div id="aladin-lite-container" class="absolute inset-0 bg-gradient-to-br from-surface to-surface-container-lowest z-0"></div>
+    <!-- Viewport Container -->
+    <div id="viewports-container" class="relative w-full h-full bg-gradient-to-br from-surface to-surface-container-lowest z-0 grid gap-1">
+      <!-- Dynamically populated viewports go here -->
+    </div>
 
     <!-- Grid Overlay SVG just for visual flair from template -->
     <svg class="absolute inset-0 w-full h-full opacity-10 pointer-events-none z-10" xmlns="http://www.w3.org/2000/svg">
@@ -213,6 +221,33 @@
             <option value="icrs">ICRS</option>
             <option value="galactic" selected>Galactic</option>
           </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout Controls Panel -->
+    <div id="panel-layout" class="absolute bottom-12 right-1/2 translate-x-1/2 w-64 glass-panel z-20 rounded-lg overflow-hidden flex flex-col hidden transition-all duration-300">
+      <div class="bg-surface-container-high px-4 py-3 flex flex-col gap-2 border-b border-outline-variant/20">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-sm">grid_view</span>
+            <span class="font-headline text-xs font-bold uppercase tracking-wider text-on-surface">Layout Control</span>
+          </div>
+        </div>
+      </div>
+      <div class="p-3 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <label class="text-[10px] uppercase font-bold text-primary/60">Layout Mode</label>
+          <select id="layout-mode-select" class="bg-surface-container-lowest px-2 py-1 rounded border border-outline-variant/20 text-[10px] text-white">
+            <option value="grid" selected>Grid</option>
+            <option value="horizontal">Horizontal Split</option>
+            <option value="vertical">Vertical Split</option>
+            <option value="single">Single</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-between border-t border-outline-variant/20 pt-2">
+          <label class="text-[10px] uppercase font-bold text-primary/60">Sync Views</label>
+          <input type="checkbox" id="sync-views-checkbox" checked class="w-4 h-4 text-primary bg-surface-container-lowest border-outline-variant/20 rounded focus:ring-primary focus:ring-1">
         </div>
       </div>
     </div>
