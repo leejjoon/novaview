@@ -127,6 +127,10 @@ const checkA = setInterval(() => {
                 });
                 (window as any).aladin = aladin;
 
+            window.addEventListener('resize', () => {
+                aladin.resize();
+            });
+
             // Event Hooks for Bottom Right Coord Panel
             aladin.on('positionChanged', () => {
                 const center = aladin.getRaDec();
